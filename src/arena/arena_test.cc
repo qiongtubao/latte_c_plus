@@ -5,7 +5,7 @@
 #include "random.h"
 
 
-namespace leveldb {
+namespace latte {
 
 TEST(ArenaTest, Empty) { Arena arena; }
 

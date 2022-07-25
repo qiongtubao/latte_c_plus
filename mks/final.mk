@@ -47,7 +47,8 @@ ifeq ($(C11_ATOMIC),yes)
     CXX_STD+=-std=c++11
 else
 	CC_STD+=-std=c99
-    CXX_STD+=-std=c++99
+    # CXX_STD+=-std=c++98
+  CXX_STD+=-std=gnu99
 endif
 
 # sys diff
