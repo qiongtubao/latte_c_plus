@@ -1,2 +1,3 @@
 
 FINAL_CC_LIBS+= -ldl
+FINAL_CXX_LIBS+= -ldl

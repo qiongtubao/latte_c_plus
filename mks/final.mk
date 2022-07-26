@@ -51,9 +51,6 @@ else
   CXX_STD+=-std=gnu99
 endif
 
-# sys diff
-include $(WORKSPACE)/mks/uname_s_final/$(uname_S).mk
-include $(WORKSPACE)/mks/uname_m_final/$(uname_M).mk
 
 #FINAL_CC_CFLAGS
 FINAL_CC_CFLAGS=$(STD) $(WARN) $(OPT) $(DEBUG) $(CFLAGS) $(LATTE_CFLAGS)
@@ -61,3 +58,7 @@ FINAL_CXX_CFLAGS=$(CXX_STD) $(WARN) $(OPT) $(DEBUG) $(CFLAGS) $(LATTE_CFLAGS)
 #FINAL_CC_LIBS
 FINAL_CC_LIBS=-I../
 FINAL_CXX_LIBS=-I../
+# sys diff
+include $(WORKSPACE)/mks/uname_s_final/$(uname_S).mk
+include $(WORKSPACE)/mks/uname_m_final/$(uname_M).mk
+
