@@ -1,0 +1,1 @@
+//这里只是为了latte.mk 没有基础cc文件 因为tmplate  不能头文件和cc 分离
