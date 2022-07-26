@@ -1,5 +1,4 @@
 
-#include "skiplist.h"
 #include <assert.h>
 
 namespace latte {
@@ -9,5 +8,7 @@ namespace latte {
         // Use a 'release store' so that anybody who reads through this
         // pointer observes a fully initialized version of the inserted node.
         next_[n].store(x, std::memory_order_release);
-    }
+    };
+
+    
 }

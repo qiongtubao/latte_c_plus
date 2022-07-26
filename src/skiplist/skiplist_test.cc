@@ -1,5 +1,5 @@
 
-#include "skiplist.h"
+#include "skiplist_c.h"
 
 #include "gtest/gtest.h"
 

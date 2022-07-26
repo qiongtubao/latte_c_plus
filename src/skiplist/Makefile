@@ -1,5 +1,5 @@
 WORKSPACE?=$(CURDIR)/../..
-BUILD_OBJ?=skiplist.xo skiplistnode.xo
+BUILD_OBJ?=
 LIB_OBJ?=../arena/arena.xo
 #../zmalloc/zmalloc.o
 TEST_MAIN?=skiplist_test
