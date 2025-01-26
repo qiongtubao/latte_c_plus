@@ -43,11 +43,11 @@ C11_ATOMIC := $(shell sh -c 'echo "\#include <stdatomic.h>" > foo.c; \
 	$(CC) -std=c11 -c foo.c -o foo.o > /dev/null 2>&1; \
 	if [ -f foo.o ]; then echo "yes"; rm foo.o; fi; rm foo.c')
 ifeq ($(C11_ATOMIC),yes)
-	CC_STD+=-std=c11
-    CXX_STD+=-std=c++11
+  CC_STD+=-std=c11
+  CXX_STD+=-std=c++11
 else
-	CC_STD+=-std=c99
-    CXX_STD+=-std=c++99
+  CC_STD+=-std=c99
+  CXX_STD+=-std=c++20
 endif
 
 # sys diff
