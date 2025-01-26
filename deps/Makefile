@@ -63,11 +63,13 @@ jemalloc:.make-prerequisites
 
 .PHONY: jemalloc
 
-tmalloc: 
-	cd gpreftools && sh ./autogen.sh 
-	cd gpreftools && mkdir ./build 
-	cd gpreftools/build && make ../configure --disable-cpu-profiler --disable-heap-profiler --disable-heap-checker --disable-debugalloc --enable-minimal 
+# tmalloc: 
+# 	cd gpreftools && sh ./autogen.sh 
+# 	cd gpreftools && mkdir ./build 
+# 	cd gpreftools/build && make ../configure --disable-cpu-profiler --disable-heap-profiler --disable-heap-checker --disable-debugalloc --enable-minimal 
 
+tmalloc:
+	cd gpreftools && mkdir build && sh ./autogen.sh  && ./configure --disable-debugalloc --enable-minimal --prefix=./build && make && make install 
 
 googletest:
 	cd googletest && cmake -Dgtest_build_samples=ON . && make  

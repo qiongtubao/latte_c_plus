@@ -1,63 +1,76 @@
+
 #include <cassert>
 #include <cstddef>
+#include <cstdio>
 #include <cstring>
 #include <string>
+#include <string_view>
 
-namespace latte {
+
+
+namespace latte
+{
     class Slice {
         public:
-        // Create an empty slice.
-        Slice() : data_(""), size_(0) {}
+            Slice() : data_(""), size_(0) {}
 
-        // Create a slice that refers to d[0,n-1].
-        Slice(const char* d, size_t n) : data_(d), size_(n) {}
+            Slice(const char* d, size_t n) : data_(d), size_(n) {}
 
-        // Create a slice that refers to the contents of "s"
-        Slice(const std::string& s) : data_(s.data()), size_(s.size()) {}
+            Slice(const std::string& s) : data_(s.data()), size_(s.size()) {}
 
-        // Create a slice that refers to s[0,strlen(s)-1]
-        Slice(const char* s) : data_(s), size_(strlen(s)) {}
+            Slice(const std::string_view& sv) : data_(sv.data()), size_(sv.size()) {}
 
-        // Intentionally copyable.
-        Slice(const Slice&) = default;
-        Slice& operator=(const Slice&) = default;
+            Slice(const char* s) : data_(s) { size_ = (s == nullptr) ? 0 : strlen(s); }
 
-        // Return a pointer to the beginning of the referenced data
-        const char* data() const { return data_; }
+            Slice(const struct SliceParts& parts, std::string* buf);
 
-        // Return the length (in bytes) of the referenced data
-        size_t size() const { return size_; }
+            size_t size() const { return size_; }
 
-        // Return true iff the length of the referenced data is zero
-        bool empty() const { return size_ == 0; }
+            const char* data() const { return data_; }
 
-        // Return the ith byte in the referenced data.
-        // REQUIRES: n < size()
-        char operator[](size_t n) const {
-            assert(n < size());
-            return data_[n];
+            bool empty() const { return size_ == 0; }
+
+            char operator[](size_t n) const {
+                assert(n < size());
+                return data_[n];
+            }
+
+            void clear() {
+                data_ = "";
+                size_ = 0;
+            }
+
+            void remove_prefix(size_t n) {
+                assert(n <= size());
+                data_ += n;
+                size_ -= n;
+            }
+
+            void remove_suffix(size_t n) {
+                assert(n <= size());
+                size_ -= n;
+            }
+
+        // 返回包含引用数据副本的字符串。
+        // 当 hex 为真时，返回两倍长度的十六进制编码的字符串（0-9A-F）
+        std::string ToString(bool hex) const;
+
+        // 返回引用与此切片相同数据的 string_view。
+        std::string_view ToStringView() const {
+            return std::string_view(data_, size_);
         }
 
-        // Change this slice to refer to an empty array
-        void clear() {
-            data_ = "";
-            size_ = 0;
-        }
+        // 将当前切片解码为十六进制字符串，结果为
+        // 如果成功则返回 true，如果这不是有效的十六进制字符串
+        // （例如不是来自 Slice::ToString(true)）DecodeHex 返回 false。
+        // 此切片应具有偶数个 0-9A-F 字符
+        // 也接受小写字母（a-f）
+        bool DecodeHex(std::string* result) const;
 
-        // Drop the first "n" bytes from this slice.
-        void remove_prefix(size_t n) {
-            assert(n <= size());
-            data_ += n;
-            size_ -= n;
-        }
-
-        // Return a string that contains the copy of the referenced data.
-        std::string ToString() const { return std::string(data_, size_); }
-
-        // Three-way comparison.  Returns value:
-        //   <  0 iff "*this" <  "b",
-        //   == 0 iff "*this" == "b",
-        //   >  0 iff "*this" >  "b"
+        // 三向比较。返回值：
+        // < 0 当且仅当“*this”<“b”，
+        // == 0 当且仅当“*this”==“b”，
+        // > 0 当且仅当“*this”>“b”
         int compare(const Slice& b) const;
 
         // Return true iff "x" is a prefix of "*this"
@@ -65,27 +78,16 @@ namespace latte {
             return ((size_ >= x.size_) && (memcmp(data_, x.data_, x.size_) == 0));
         }
 
-        private:
-        const char* data_;
-        size_t size_;
-    };
-
-    inline bool operator==(const Slice& x, const Slice& y) {
-        return ((x.size() == y.size()) &&
-                (memcmp(x.data(), y.data(), x.size()) == 0));
-    }
-
-    inline bool operator!=(const Slice& x, const Slice& y) { return !(x == y); }
-
-    inline int Slice::compare(const Slice& b) const {
-        const size_t min_len = (size_ < b.size_) ? size_ : b.size_;
-        int r = memcmp(data_, b.data_, min_len);
-        if (r == 0) {
-            if (size_ < b.size_)
-            r = -1;
-            else if (size_ > b.size_)
-            r = +1;
+        bool ends_with(const Slice& x) const {
+            return ((size_ >= x.size_) &&
+                    (memcmp(data_ + size_ - x.size_, x.data_, x.size_) == 0));
         }
-        return r;
-    }
-}
+
+        // Compare two slices and returns the first byte where they differ
+        size_t difference_offset(const Slice& b) const;
+
+        // private:
+            const char* data_;
+            size_t size_;
+    };
+} // namespace latte
