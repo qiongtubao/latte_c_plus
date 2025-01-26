@@ -1,0 +1,8 @@
+
+
+*.xo
+*.d
+*.gcda
+*.gcno
+
+*_test
