@@ -1,5 +1,5 @@
 WORKSPACE?=$(CURDIR)/../..
-BUILD_OBJ?=db.xo 
+BUILD_OBJ?=db.xo leveldb.xo rocksdb.xo
 LIB_OBJ?=
 #../zmalloc/zmalloc.o
 TEST_MAIN?=db_test

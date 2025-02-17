@@ -1,5 +1,8 @@
 
 
+#ifndef __LATTE_C_PLUS_DB_H
+#define __LATTE_C_PLUS_DB_H
+
 #include "status/status.h"
 #include "./options/open_options.h"
 #include "./options/read_options.h"
@@ -21,14 +24,19 @@ namespace latte
 
             // static Status Put(const WriteOptions& options, const Slice& key, const Slice& value) = 0;
 
-            virtual Status Get(const ReadOptions& options, const Slice& key, std::string* value) = 0;
+            // virtual Status Get(const ReadOptions& options, const Slice& key, std::string* value) = 0;
 
             // static Status Delete(const WriteOptions& options, const Slice& key) = 0;
 
             // batch can Put or delete 
             // Status Write(const WriteOptions& options, WriteBatch* updates) override;
 
+     
+
+
 
     };
     
 } // namespace latte
+
+#endif

@@ -10,7 +10,8 @@ LATTE_CXX_LD=$(CXX) $(FINAL_CXX_CFLAGS)
 
 LATTE_INSTALL=$(QUIET_INSTALL)$(INSTALL)
 
-
+#	$(MAKE) latte_lcov
+#	$(MAKE) latte_genhtml
 
 
 .make-prerequisites:
@@ -27,8 +28,6 @@ gtest:
 	$(MAKE) $(TEST_MAIN).xo LATTE_CFLAGS="-fprofile-arcs -ftest-coverage -I$(WORKSPACE)/deps/googletest/googletest/include"
 	$(LATTE_CXX)  -fprofile-arcs -ftest-coverage $(DEBUG) -o $(TEST_MAIN) $(TEST_MAIN).xo $(BUILD_OBJ) $(FINAL_CXX_LIBS) -I$(WORKSPACE)/deps/googletest/googletest/include $(WORKSPACE)/deps/googletest/lib/libgtest.a $(WORKSPACE)/deps/googletest/lib/libgtest_main.a
 	./$(TEST_MAIN)
-	$(MAKE) latte_lcov
-	$(MAKE) latte_genhtml
 
 test: 
 	$(MAKE) $(BUILD_OBJ) $(LIB_OBJ) LATTE_CFLAGS="-fprofile-arcs -ftest-coverage"

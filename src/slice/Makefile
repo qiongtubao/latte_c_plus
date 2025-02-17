@@ -1,5 +1,5 @@
 WORKSPACE?=$(CURDIR)/../..
-BUILD_OBJ?=slice.xo
+BUILD_OBJ?=slice.xo string_util.xo
 LIB_OBJ?=
 #../zmalloc/zmalloc.o
 TEST_MAIN?=slice_test

@@ -1,10 +1,14 @@
 
+
+
+
 #pragma once 
 #include <stdio.h>
 #include <stdlib.h>
 #include <memory>
 #include <string>
 #include "slice/slice.h"
+#include <iostream>
 
 
 namespace latte
@@ -99,8 +103,40 @@ namespace latte
             return (code() == kIOError) && (subcode() == kIOFenced);
         }
 
+        static Status NotSupported(const Slice& msg, const Slice& msg2 = Slice()) {
+            return Status(kNotSupported, msg, msg2);
+        }
+
+        static Status NotSupported(SubCode msg = kNone) {
+            return Status(kNotSupported, msg);
+        }
+
+        // Return error status of an appropriate type.
+        static Status NotFound(const Slice& msg, const Slice& msg2 = Slice()) {
+            return Status(kNotFound, msg, msg2);
+        }
+        // Fast path for not found without malloc;
+        static Status NotFound(SubCode msg = kNone) { return Status(kNotFound, msg); }
+
+        static Status InvalidArgument(const Slice& msg, const Slice& msg2 = Slice()) {
+            return Status(kInvalidArgument, msg, msg2);
+        }
+
+        static Status InvalidArgument(SubCode msg = kNone) {
+            return Status(kInvalidArgument, msg);
+        }
+
+        static Status Corruption(const Slice& msg, const Slice& msg2 = Slice()) {
+            return Status(kCorruption, msg, msg2);
+        }
+
+        static Status IOError(const Slice& msg, const Slice& msg2 = Slice()) {
+            return Status(kIOError, msg, msg2);
+        }
+        static Status IOError(SubCode msg = kNone) { return Status(kIOError, msg); }
+
         std::string ToString() const;
-        protected:
+        public:
             Code code_;
             SubCode subcode_;
             Severity sev_;
@@ -112,7 +148,8 @@ namespace latte
             std::unique_ptr<const char[]> state_;
         
         Code code() const {
-            return (state_ == nullptr) ? kOk : static_cast<Code>(state_[4]);
+            MarkChecked();
+            return code_;
         }
 
         SubCode subcode() const {
@@ -136,6 +173,53 @@ namespace latte
             : Status(_code, kNone, msg, msg2) {};
 
         Status(const Status& s, Severity sev);
+
+        // Returns true iff the status indicates a NotFound error.
+        bool IsNotFound() const {
+            MarkChecked();
+            return code() == kNotFound;
+        }
+        
+        // Returns true iff the status indicates an IOError.
+        bool IsIOError() const {
+            MarkChecked();
+            return code() == kIOError;
+        }
+
+        // Returns true iff the status indicates a Corruption error.
+        bool IsCorruption() const {
+            MarkChecked();
+            return code() == kCorruption;
+        }
+        
+
+        // Status& operator=(Status&& s) noexcept;
+
+        // bool operator==(const Status& rhs) const;
+
+        // bool operator!=(const Status& rhs) const;
+
+        public:
+            bool ok() const { return (state_ == nullptr); }
+        
+            static Status OK() { return Status(); }
+
+            explicit Status(Code _code, SubCode _subcode = kNone)
+                : code_(_code),
+                    subcode_(_subcode),
+                    sev_(kNoError),
+                    retryable_(false),
+                    data_loss_(false),
+                    scope_(0) {}
+
+            explicit Status(Code _code, SubCode _subcode, bool retryable, bool data_loss,
+                    unsigned char scope)
+                : code_(_code),
+                    subcode_(_subcode),
+                    sev_(kNoError),
+                    retryable_(retryable),
+                    data_loss_(data_loss),
+                    scope_(scope) {}
     };
 
     inline Status::Status(const Status& s)
@@ -147,9 +231,41 @@ namespace latte
           scope_(s.scope_) {
         s.MarkChecked();
         state_ = (s.state_ == nullptr) ? nullptr : CopyState(s.state_.get());
-    }
+    };
 
     
+    // inline Status& Status::operator=(Status&& s) noexcept {
+    //     if (this != &s) {
+    //         s.MarkChecked();
+    //         MustCheck();
+    //         code_ = std::move(s.code_);
+    //         s.code_ = kOk;
+    //         subcode_ = std::move(s.subcode_);
+    //         s.subcode_ = kNone;
+    //         sev_ = std::move(s.sev_);
+    //         s.sev_ = kNoError;
+    //         retryable_ = std::move(s.retryable_);
+    //         s.retryable_ = false;
+    //         data_loss_ = std::move(s.data_loss_);
+    //         s.data_loss_ = false;
+    //         scope_ = std::move(s.data_loss_);
+    //         s.scope_ = 0;
+    //         state_ = std::move(s.state_);
+    //     }
+    //     return *this;
+    // }
+
+    // inline bool Status::operator==(const Status& rhs) const {
+    //     MarkChecked();
+    //     rhs.MarkChecked();
+    //     return (code_ == rhs.code_);
+    // }
+
+    // inline bool Status::operator!=(const Status& rhs) const {
+    //     MarkChecked();
+    //     rhs.MarkChecked();
+    //     return !(*this == rhs);
+    // }
 
 
 } // namespace latte

@@ -1,4 +1,8 @@
 
+
+#ifndef __LATTE_C_PLUS_SLICE_H
+#define __LATTE_C_PLUS_SLICE_H
+
 #include <cassert>
 #include <cstddef>
 #include <cstdio>
@@ -10,6 +14,16 @@
 
 namespace latte
 {
+    // A set of Slices that are virtually concatenated together.  'parts' points
+    // to an array of Slices.  The number of elements in the array is 'num_parts'.
+    struct SliceParts {
+        SliceParts(const Slice* _parts, int _num_parts)
+            : parts(_parts), num_parts(_num_parts) {}
+        SliceParts() : parts(nullptr), num_parts(0) {}
+
+        const Slice* parts;
+        int num_parts;
+    };
     class Slice {
         public:
             Slice() : data_(""), size_(0) {}
@@ -86,8 +100,22 @@ namespace latte
         // Compare two slices and returns the first byte where they differ
         size_t difference_offset(const Slice& b) const;
 
+        // inline bool operator==(const Slice& x, const Slice& y) {
+        //     return ((x.size() == y.size()) &&
+        //         (memcmp(x.data(), y.data(), x.size()) == 0));
+        // }
+
+        // inline bool operator!=(const Slice& x, const Slice& y) { return !(x == y); }
+
         // private:
             const char* data_;
             size_t size_;
     };
+    inline bool operator==(const Slice& x, const Slice& y) {
+        return ((x.size() == y.size()) &&
+                (memcmp(x.data(), y.data(), x.size()) == 0));
+    }
 } // namespace latte
+
+
+#endif
