@@ -69,5 +69,5 @@ tmalloc:
 	cd gpreftools/build && make ../configure --disable-cpu-profiler --disable-heap-profiler --disable-heap-checker --disable-debugalloc --enable-minimal 
 
 
-googletest:
+googletest.x:
 	cd googletest && cmake -Dgtest_build_samples=ON . && make  
