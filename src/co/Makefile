@@ -10,4 +10,4 @@ include $(WORKSPACE)/mks/malloc.mk
 include $(WORKSPACE)/mks/latte.mk
 include $(WORKSPACE)/mks/info.mk
 
-FINAL_CXX_CFLAGS += -std=c++2a
+FINAL_CXX_CFLAGS += -std=c++2a -fcoroutines

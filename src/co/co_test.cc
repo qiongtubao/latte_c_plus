@@ -7,15 +7,22 @@
 namespace latte
 {
     
-    Task<int> myCoroutine(int value) {
-        std::cout << "Doubling the number " << value << std::endl;
-        co_return value * 2;
+    Task<long> myCoroutine(long value) {
+        long result = value * 2;
+        co_return result;
     }
 
     TEST(CoTest, Empty) {
-        auto task = myCoroutine(5);
-        int result = task.get(); // 获取协程的结果
-        std::cout << "Result: " << result << std::endl; // 应输出 "Result: 10"
+        // auto task = ;
+        Task<long> task =  myCoroutine(5);
+        long result = task.get();
+        std::cout <<"!!!"<<std::endl;
+        EXPECT_EQ(result, 10);
+        std::cout <<"???"<<std::endl;
     }
-} // namespace latte
+    Task<void> TestCoroutLine() {
+        long result = co_await myCoroutine(10);
+        EXPECT_EQ(result, 20);
+    }
+} // namespace latte 
 

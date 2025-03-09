@@ -1,78 +1,137 @@
-#ifndef CO_H
-#define CO_H
-
 #include <coroutine>
-#include <stdexcept> // 包含 std::runtime_error 所需的头文件
+#include <exception>
 
 namespace latte {
 
 template<typename T>
 struct Task {
+    struct promise_type;
+
+    struct awaiter {
+        std::coroutine_handle<promise_type> coro_;
+
+        bool await_ready() const noexcept { return !coro_ || coro_.done(); }
+        void await_suspend(std::coroutine_handle<> h) const noexcept { coro_.promise().continuation = h; }
+        decltype(auto) await_resume() { 
+            if (coro_.promise().exception) {
+                std::rethrow_exception(coro_.promise().exception);
+            }
+            return coro_.promise().result_value;
+        }
+
+        explicit awaiter(std::coroutine_handle<promise_type> h) : coro_(h) {}
+    };
+
     struct promise_type {
         T result_value;
+        std::exception_ptr exception;
+        std::coroutine_handle<> continuation{nullptr};
 
-        // 初始化 promise 对象
-        promise_type() = default;
-
-        // 返回协程的最终结果
         auto get_return_object() {
             return Task{std::coroutine_handle<promise_type>::from_promise(*this)};
         }
 
-        // 协程开始执行前的钩子
-        std::suspend_always initial_suspend() { return {}; }
-
-        // 协程结束后的钩子
+        std::suspend_never initial_suspend() { return {}; }
         std::suspend_never final_suspend() noexcept { return {}; }
 
-        // 处理 co_return 语句
-        void return_value(T v) {
-            result_value = v;
-        }
+        void return_value(T value) { result_value = value; }
+        void unhandled_exception() { exception = std::current_exception(); }
 
-        // 注释掉或删除以下方法，因为它与返回值类型的协程不兼容
-        ///*
-        //void return_void() {}
-        //*/
-
-        // 异常处理
-        void unhandled_exception() {
-            std::terminate();
-        }
+        awaiter operator co_await() const & { return awaiter{std::coroutine_handle<promise_type>::from_promise(*this)}; }
     };
 
     using handle_type = std::coroutine_handle<promise_type>;
-    handle_type coro;
+    handle_type coro_;
 
-    Task(handle_type h) : coro(h) {}
-    ~Task() {
-        if (coro) coro.destroy();
-    }
+    Task(handle_type h) : coro_(h) {}
+    ~Task() { if (coro_) coro_.destroy(); }
 
     Task(const Task&) = delete;
     Task& operator=(const Task&) = delete;
 
-    Task(Task&& other) noexcept : coro(other.coro) { other.coro = nullptr; }
+    Task(Task&& other) noexcept : coro_(other.coro_) { other.coro_ = nullptr; }
     Task& operator=(Task&& other) noexcept {
         if (this != &other) {
-            coro = other.coro;
-            other.coro = nullptr;
+            if (coro_) coro_.destroy();
+            coro_ = other.coro_;
+            other.coro_ = nullptr;
         }
         return *this;
     }
 
-    // 获取结果
     T get() {
-        if (!coro.done()) {
-            coro.resume();
+        while (!coro_.done()) {
+            coro_.resume();
         }
-        if (!coro.done()) {
-            throw std::runtime_error("the coroutine hasn't finished");
+        if (coro_.promise().exception) {
+            std::rethrow_exception(coro_.promise().exception);
         }
-        return coro.promise().result_value;
+        return coro_.promise().result_value;
     }
 };
 
-} // namespace latte
+// Specialization for Task<void>
+template<>
+struct Task<void> {
+    struct promise_type;
 
-#endif // CO_H
+    struct awaiter {
+        std::coroutine_handle<promise_type> coro_;
+
+        bool await_ready() const noexcept { return !coro_ || coro_.done(); }
+        void await_suspend(std::coroutine_handle<> h) const noexcept { coro_.promise().continuation = h; }
+        void await_resume() { 
+            if (coro_.promise().exception) {
+                std::rethrow_exception(coro_.promise().exception);
+            }
+        }
+
+        explicit awaiter(std::coroutine_handle<promise_type> h) : coro_(h) {}
+    };
+
+    struct promise_type {
+        std::exception_ptr exception;
+        std::coroutine_handle<> continuation{nullptr};
+
+        auto get_return_object() {
+            return Task{std::coroutine_handle<promise_type>::from_promise(*this)};
+        }
+
+        std::suspend_never initial_suspend() { return {}; }
+        std::suspend_never final_suspend() noexcept { return {}; }
+
+        void return_void() {}
+        void unhandled_exception() { exception = std::current_exception(); }
+
+        awaiter operator co_await() const & { return awaiter{std::coroutine_handle<promise_type>::from_promise(*this)}; }
+    };
+
+    using handle_type = std::coroutine_handle<promise_type>;
+    handle_type coro_;
+
+    Task(handle_type h) : coro_(h) {}
+    ~Task() { if (coro_) coro_.destroy(); }
+
+    Task(const Task&) = delete;
+    Task& operator=(const Task&) = delete;
+
+    Task(Task&& other) noexcept : coro_(other.coro_) { other.coro_ = nullptr; }
+    Task& operator=(Task&& other) noexcept {
+        if (this != &other) {
+            if (coro_) coro_.destroy();
+            coro_ = other.coro_;
+            other.coro_ = nullptr;
+        }
+        return *this;
+    }
+
+    void get() {
+        while (!coro_.done()) {
+            coro_.resume();
+        }
+        if (coro_.promise().exception) {
+            std::rethrow_exception(coro_.promise().exception);
+        }
+    }
+};
+}
