@@ -23,9 +23,9 @@ LATTE_INSTALL=$(QUIET_INSTALL)$(INSTALL)
 	$(LATTE_CXX) $(DEBUG) -MMD -o $@ -c $<  $(FINAL_CXX_LIBS) 
 
 gtest: 
-	$(MAKE) $(BUILD_OBJ) $(LIB_OBJ) LATTE_CFLAGS="-fprofile-arcs -ftest-coverage"
-	$(MAKE) $(TEST_MAIN).xo LATTE_CFLAGS="-fprofile-arcs -ftest-coverage -I$(WORKSPACE)/deps/googletest/googletest/include"
-	$(LATTE_CXX)  -fprofile-arcs -ftest-coverage $(DEBUG) -o $(TEST_MAIN) $(TEST_MAIN).xo $(BUILD_OBJ) $(FINAL_CXX_LIBS) -I$(WORKSPACE)/deps/googletest/googletest/include $(WORKSPACE)/deps/googletest/lib/libgtest.a $(WORKSPACE)/deps/googletest/lib/libgtest_main.a
+	$(MAKE) $(BUILD_OBJ) $(LIB_OBJ) LATTE_CFLAGS="-fcoroutines -fprofile-arcs -ftest-coverage"
+	$(MAKE) $(TEST_MAIN).xo LATTE_CFLAGS="-fcoroutines -fprofile-arcs -ftest-coverage -I$(WORKSPACE)/deps/googletest/googletest/include"
+	$(LATTE_CXX) -fcoroutines -fprofile-arcs -ftest-coverage $(DEBUG) -o $(TEST_MAIN) $(TEST_MAIN).xo $(BUILD_OBJ) $(FINAL_CXX_LIBS) -I$(WORKSPACE)/deps/googletest/googletest/include $(WORKSPACE)/deps/googletest/lib/libgtest.a $(WORKSPACE)/deps/googletest/lib/libgtest_main.a
 	./$(TEST_MAIN)
 	$(MAKE) latte_lcov
 	$(MAKE) latte_genhtml
