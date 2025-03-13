@@ -8,4 +8,5 @@
 *_test
 
 
-locv_output/*
+*/locv_output/*
+*.log

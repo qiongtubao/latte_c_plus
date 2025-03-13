@@ -13,5 +13,6 @@ namespace latte
     using TimeVal = struct timeval;
 
 #endif
+    //获得时间的函数     
     void GetTimeOfDay(TimeVal* tv, struct  timezone* tz);
 } // namespace latte
