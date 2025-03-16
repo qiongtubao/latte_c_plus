@@ -6,3 +6,7 @@
 *.gcno
 
 *_test
+
+
+*/locv_output/*
+*.log
